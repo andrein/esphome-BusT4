@@ -276,7 +276,11 @@ Required tail per domain: number → `min`,`max` (+ optional `step`=1, `unit`, `
 | `thermal` | Thermal protection | Thermal protection tripped |
 | `standby_active` | Stand-by active | Controller is in stand-by |
 | `on_battery` | On battery | Running from the backup battery |
-| `position_error`, `bluebus_error`, `stop_error`, `function_error`, `settings_error` | Position / BlueBus / Stop circuit / Function / Settings error | Controller-reported faults |
+| `position_error` | Position error | Controller-reported fault |
+| `bluebus_error` | BlueBus error | Controller-reported fault |
+| `stop_error` | Stop circuit error | Controller-reported fault |
+| `function_error` | Function error | Controller-reported fault |
+| `settings_error` | Settings error | Controller-reported fault |
 | `raw` | IO raw | Whole payload as hex |
 
 The bit layout follows [gashtaan's diagnostics page](https://github.com/gashtaan/nice-bidiwifi-firmware/blob/main/firmware/web.cpp). Whether an input reads on when its contact is closed or when it is triggered depends on how the controller learned it, so compare against the controller's own input LEDs before building automations on one.
