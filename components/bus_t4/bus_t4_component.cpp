@@ -211,7 +211,7 @@ void BusT4Component::rxTask() {
             if (header_check != packet.data[6]) {
               ESP_LOGW(TAG, "Header checksum mismatch: expected 0x%02X, got 0x%02X: %s",
                        header_check, packet.data[6],
-                       format_hex_pretty(packet.data, packet.size).c_str());
+                       hex_pretty(packet.data, packet.size).c_str());
               rx_errors_++;
               rx_state = WAIT_SYNC;
               break;
@@ -226,7 +226,7 @@ void BusT4Component::rxTask() {
               if (payload_check != packet.data[packet.size - 1]) {
                 ESP_LOGW(TAG, "Payload checksum mismatch: expected 0x%02X, got 0x%02X: %s",
                          payload_check, packet.data[packet.size - 1],
-                         format_hex_pretty(packet.data, packet.size).c_str());
+                         hex_pretty(packet.data, packet.size).c_str());
                 rx_errors_++;
                 rx_state = WAIT_SYNC;
                 break;
@@ -235,7 +235,7 @@ void BusT4Component::rxTask() {
 
             // Both checksums valid - accept packet
             ESP_LOGD(TAG, "Received packet: %s (%d bytes)",
-                     format_hex_pretty(packet.data, packet.size).c_str(), packet.size);
+                     hex_pretty(packet.data, packet.size).c_str(), packet.size);
             if (!xQueueSend(rxQueue_, &packet, pdMS_TO_TICKS(100))) {
               ESP_LOGW(TAG, "RX queue full, dropping packet");
               rx_errors_++;
@@ -259,7 +259,7 @@ void BusT4Component::txTask() {
   for (;;) {
     T4Packet packet;
     if (xQueueReceive(txQueue_, &packet, pdMS_TO_TICKS(10))) {
-      ESP_LOGD(TAG, "Sending packet: %s", format_hex_pretty(packet.data, packet.size).c_str());
+      ESP_LOGD(TAG, "Sending packet: %s", hex_pretty(packet.data, packet.size).c_str());
       send_break();
       parent_->write_byte(T4_SYNC);
       parent_->write_byte(packet.size);
@@ -354,12 +354,12 @@ std::string BusT4Component::debug_request(const std::string &message_hex, uint32
   }
 
   T4Source target{0x00, 0x03};  // motor control unit
-  ESP_LOGI(TAG, "[debug] TX dmp: %s", format_hex_pretty(msg).c_str());
+  ESP_LOGI(TAG, "[debug] TX dmp: %s", hex_pretty(msg).c_str());
 
   // dmp_request blocks until the matching reply arrives (short stall) or timeout.
   T4Packet rsp;
   if (this->dmp_request(target, msg.data(), msg.size(), &rsp, timeout_ms)) {
-    std::string reply = format_hex_pretty(rsp.data, rsp.size);
+    std::string reply = hex_pretty(rsp.data, rsp.size);
     ESP_LOGI(TAG, "[debug] RX: %s", reply.c_str());
     return reply;
   }
@@ -373,7 +373,7 @@ std::string BusT4Component::debug_request_raw(const std::string &frame_hex, uint
     ESP_LOGW(TAG, "[debug] invalid hex frame: '%s'", frame_hex.c_str());
     return "";
   }
-  ESP_LOGI(TAG, "[debug] TX raw: %s", format_hex_pretty(bytes).c_str());
+  ESP_LOGI(TAG, "[debug] TX raw: %s", hex_pretty(bytes).c_str());
   send_break();
   parent_->write_array(bytes.data(), bytes.size());
   parent_->flush();
@@ -389,7 +389,7 @@ std::string BusT4Component::debug_request_raw(const std::string &frame_hex, uint
       continue;
     if (pkt.header.from == address_)  // skip our own TX echo
       continue;
-    std::string reply = format_hex_pretty(pkt.data, pkt.size);
+    std::string reply = hex_pretty(pkt.data, pkt.size);
     ESP_LOGI(TAG, "[debug] RX: %s", reply.c_str());
     this->dispatch_packet_(pkt);  // keep normal device handling alive
     return reply;                 // first reply is the answer — stop waiting

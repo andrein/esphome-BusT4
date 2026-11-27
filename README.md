@@ -148,8 +148,10 @@ esphome:
   devices:
     - id: cu_dev
       name: "Gate"
+      relation: via
     - id: oxi_dev
       name: "OXI receiver"
+      relation: via
 
 external_components:
   - source:
