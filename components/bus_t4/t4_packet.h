@@ -18,6 +18,10 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
+#include <vector>
+
+#include "esphome/core/helpers.h"
 #include <cstdint>
 
 namespace esphome::bus_t4 {
@@ -222,5 +226,20 @@ enum T4Command : uint8_t {
   CMD_RELEASE_AND_OPEN = 0x19,
   CMD_RELEASE_AND_CLOSE = 0x1A,
 };
+
+// ESPHome 2026.11 removed the std::string-returning format_hex_pretty(); this keeps its
+// output ("05.00.02.00.00 (5)": '.'-separated, length suffix above 4 bytes), which the
+// raw I/O state text sensor publishes to Home Assistant.
+inline std::string hex_pretty(const uint8_t *data, size_t length) {
+  if (data == nullptr || length == 0)
+    return "";
+  std::string out(format_hex_pretty_size(length), '\0');
+  format_hex_pretty_to(out.data(), out.size(), data, length, '.');
+  out.resize(length * 3 - 1);
+  if (length > 4)
+    out += " (" + std::to_string(length) + ")";
+  return out;
+}
+inline std::string hex_pretty(const std::vector<uint8_t> &data) { return hex_pretty(data.data(), data.size()); }
 
 }  // namespace esphome::bus_t4

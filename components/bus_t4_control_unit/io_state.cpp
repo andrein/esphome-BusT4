@@ -40,7 +40,7 @@ void BusT4IoState::on_packet(const T4Packet &packet) {
       bit.sensor->publish_state((data[bit.byte] & bit.mask) != 0);
   }
   if (this->raw_sensor_ != nullptr) {
-    std::string raw = format_hex_pretty(data, len);
+    std::string raw = bus_t4::hex_pretty(data, len);
     if (!this->raw_sensor_->has_state() || this->raw_sensor_->state != raw)
       this->raw_sensor_->publish_state(raw);
   }
